@@ -1,0 +1,5 @@
+amazonProperties:
+  endpointUrl: arn:aws:s3:us-west-2:161376155867:accesspoint/photosharingtestbucketaccesspoint
+  accessKey: AKIASLEWEXDNTVDD2JME
+  secretKey: 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
+  bucketName: photosharingtestbucket
