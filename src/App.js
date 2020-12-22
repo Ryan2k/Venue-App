@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import uw from './uw.jpg';
 
 class App extends Component {
 
@@ -16,12 +17,13 @@ class App extends Component {
         document.body.style.backgroundColor = "#D8BFD8"
     }
 
-    handleUpload() {
+    handleUpload = () => {
         alert("Upload clicked")
     }
 
     handleDownload = () => {
-        alert("Download clicked")
+        let element = document.createElement("a");
+        element.click();
     };
 
     render() {
@@ -33,10 +35,14 @@ class App extends Component {
                 </button>
                 <br/>
                 <br/>
-                <button onClick={() => {
-                    this.handleDownload();
-                }}><font size="4">Download</font>
-                </button>
+                <img src={uw} alt="uw"/>
+                <br/>
+                <a href="http://localhost:3000/static/media/uw.48d20167.jpg"
+                   download
+                   onClick={() => this.handleDownload()}>
+                    <button><font size="4">Download</font></button>
+                </a>
+                <br/>
             </div>
         );
     }
