@@ -1,6 +1,6 @@
 require('dotenv').config()
 const express = require('express')
-const aws = require('aws')
+const aws = require('aws-sdk')
 const formData = require('express-form-data')
 const cors = require('cors')
 const { CLIENT_ORIGIN } = require('./config')
@@ -22,7 +22,8 @@ app.use(formData.parse())
 app.post('/image-upload', (req, res) => {
 
     const values = Object.values(req.files)
-    const promises = values.map(image => aws.uploader.upload(image.path))
+    console.log("step")
+    const promises = values.map(image => aws.upload(image.path))
 
     Promise
         .all(promises)
