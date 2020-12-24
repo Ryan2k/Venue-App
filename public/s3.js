@@ -91,6 +91,7 @@ function viewAlbum(albumName) {
         let photos = data.Contents.map(function (photo) {
             let photoKey = photo.Key;
             let photoUrl = bucketUrl + encodeURIComponent(photoKey);
+            console.log(photoUrl);
 
             return getHtml([
                 "<span>",
@@ -105,15 +106,19 @@ function viewAlbum(albumName) {
                 "')\">",
                 "X",
                 "</span>",
+                "<a href=" + photoUrl + "download onclick=\"downloadPhoto()\">",
+                "<button>Download</button>",
+                "</a>",
                 "<span>",
                 photoKey.replace(albumPhotosKey, ""),
                 "</span>",
                 "</div>",
-                "</span>"
+                "</span>",
+                "<br>"
             ]);
         });
         let message = photos.length
-            ? "<p>Click on the X to delete the photo</p>"
+            ? "<p>Click on the X to delete the photo.</p><p>Click Download to download the photo.</p>"
             : "<p>You do not have any photos in this album. Please add photos.</p>";
         let htmlTemplate = [
             "<h2>",
@@ -201,5 +206,14 @@ function deleteAlbum(albumName) {
             }
         );
     });
+}
+
+function downloadPhoto() {
+    // let href = this.request.httpRequest.endpoint.href;
+    // let bucketUrl = href + albumBucketName + "/";
+    // let photoUrl = bucketUrl + encodeURIComponent(photoKey);
+    let element = document.createElement("a");
+    element.click();
+
 }
 
