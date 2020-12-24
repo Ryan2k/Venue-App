@@ -3,7 +3,6 @@ import Spinner from './Spinner'
 import Images from './Images'
 import Buttons from './Buttons'
 import { API_URL } from './config'
-import './App.css'
 import uw from './uw.jpg';
 require('dotenv').config()
 
@@ -33,6 +32,7 @@ class App extends Component {
         let element = document.createElement("a");
         element.click();
     };
+
     onChange = e => {
         const files = Array.from(e.target.files)
         this.setState({ uploading: true })
