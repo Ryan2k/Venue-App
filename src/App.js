@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import Spinner from './Spinner'
 import Images from './Images'
 import Buttons from './Buttons'
 import { API_URL } from './config'
