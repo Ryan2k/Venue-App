@@ -2,7 +2,6 @@ const albumBucketName = "photosharingtestbucket";
 const bucketRegion = "us-west-2";
 const IdentityPoolId = "us-west-2:ef7b33ab-dd80-4e4e-9ed6-35c63988c43a";
 
-
 AWS.config.update({
     region: bucketRegion,
     credentials: new AWS.CognitoIdentityCredentials({
@@ -60,28 +59,30 @@ function createAlbum(albumName) {
     }
     if (albumName.indexOf("/") !== -1) {
         return alert("Album names cannot contain slashes.");
+    } else if (albumName.indexOf(" ") !== -1) {
+        return alert("Album names cannot contain spaces");
     }
     let albumKey = encodeURIComponent(albumName);
-    s3.headObject({Bucket: albumBucketName, Key: albumKey}, function (err) {
+    s3.headObject({ Bucket: albumBucketName, Key: albumKey }, function (err) {
         if (!err) {
             return alert("Album already exists.");
         }
         if (err.code !== "NotFound") {
             return alert("There was an error creating your album: " + err.message);
         }
-        s3.putObject({Bucket: albumBucketName, Key: albumKey}, function (err) {
+        s3.putObject({ Bucket: albumBucketName, Key: albumKey }, function (err) {
             if (err) {
                 return alert("There was an error creating your album: " + err.message);
             }
             alert("Successfully created album.");
             viewAlbum(albumName);
         });
-    });
+   });
 }
 
 function viewAlbum(albumName) {
     let albumPhotosKey = encodeURIComponent(albumName) + "/";
-    s3.listObjects({Bucket: albumBucketName, Prefix: albumPhotosKey}, function (err, data) {
+    s3.listObjects({ Bucket: albumBucketName, Prefix: albumPhotosKey }, function (err, data) {
         if (err) {
             return alert("There was an error viewing your album: " + err.message);
         }
@@ -230,7 +231,9 @@ function downloadPhoto(photoUrl, photoKey) {
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
-            alert('your file has downloaded!'); // or you know, something with better UX...
+            alert('Your file has downloaded!'); // or you know, something with better UX...
         })
-        .catch(() => alert('oh no!'));
+        .catch(error => {
+            alert('Photo could not be downloaded: ' + error.message);
+        });
 }
