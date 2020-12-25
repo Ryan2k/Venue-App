@@ -70,13 +70,8 @@ function createAlbum(albumName) {
         if (err.code !== "NotFound") {
             return alert("There was an error creating your album: " + err.message);
         }
-        s3.putObject({ Bucket: albumBucketName, Key: albumKey }, function (err) {
-            if (err) {
-                return alert("There was an error creating your album: " + err.message);
-            }
-            alert("Successfully created album.");
-            viewAlbum(albumName);
-        });
+        alert("Successfully created album.");
+        viewAlbum(albumName);
    });
 }
 
@@ -125,7 +120,7 @@ function viewAlbum(albumName) {
         });
         let message = photos.length
             ? "<p>Click on the X to delete the photo.</p><p>Click Download to download the photo.</p>"
-            : "<p>You do not have any photos in this album. Please add photos.</p>";
+            : "<p>You do not have any photos in this album. Please add photos to save the album.</p>";
         let htmlTemplate = [
             "<h2>",
             "Album: " + albumName,
