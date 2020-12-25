@@ -2,6 +2,7 @@ const albumBucketName = "photosharingtestbucket";
 const bucketRegion = "us-west-2";
 const IdentityPoolId = "us-west-2:ef7b33ab-dd80-4e4e-9ed6-35c63988c43a";
 
+
 AWS.config.update({
     region: bucketRegion,
     credentials: new AWS.CognitoIdentityCredentials({
@@ -11,11 +12,11 @@ AWS.config.update({
 
 const s3 = new AWS.S3({
     apiVersion: "2006-03-01",
-    params: { Bucket: albumBucketName }
+    params: {Bucket: albumBucketName}
 });
 
 function listAlbums() {
-    s3.listObjects({ Bucket: albumBucketName, Delimiter: "/" }, function(err, data) {
+    s3.listObjects({Bucket: albumBucketName, Delimiter: "/"}, function (err, data) {
         if (err) {
             return alert("There was an error listing your albums: " + err.message);
         } else {
@@ -61,14 +62,14 @@ function createAlbum(albumName) {
         return alert("Album names cannot contain slashes.");
     }
     let albumKey = encodeURIComponent(albumName);
-    s3.headObject({ Bucket: albumBucketName, Key: albumKey }, function(err) {
+    s3.headObject({Bucket: albumBucketName, Key: albumKey}, function (err) {
         if (!err) {
             return alert("Album already exists.");
         }
         if (err.code !== "NotFound") {
             return alert("There was an error creating your album: " + err.message);
         }
-        s3.putObject({ Bucket: albumBucketName, Key: albumKey }, function(err) {
+        s3.putObject({Bucket: albumBucketName, Key: albumKey}, function (err) {
             if (err) {
                 return alert("There was an error creating your album: " + err.message);
             }
@@ -80,7 +81,7 @@ function createAlbum(albumName) {
 
 function viewAlbum(albumName) {
     let albumPhotosKey = encodeURIComponent(albumName) + "/";
-    s3.listObjects({ Bucket: albumBucketName, Prefix: albumPhotosKey }, function(err, data) {
+    s3.listObjects({Bucket: albumBucketName, Prefix: albumPhotosKey}, function (err, data) {
         if (err) {
             return alert("There was an error viewing your album: " + err.message);
         }
@@ -91,7 +92,7 @@ function viewAlbum(albumName) {
         let photos = data.Contents.map(function (photo) {
             let photoKey = photo.Key;
             let photoUrl = bucketUrl + encodeURIComponent(photoKey);
-            console.log(photoUrl);
+            console.log(photoKey);
 
             return getHtml([
                 "<span>",
@@ -106,9 +107,13 @@ function viewAlbum(albumName) {
                 "')\">",
                 "X",
                 "</span>",
-                "<a href=" + photoUrl + "download onclick=\"downloadPhoto()\">",
-                "<button>Download</button>",
-                "</a>",
+                "<button onclick=\"downloadPhoto('" +
+                photoUrl +
+                "','" +
+                photoKey +
+                "')\">",
+                "Download",
+                "</button>",
                 "<span>",
                 photoKey.replace(albumPhotosKey, ""),
                 "</span>",
@@ -164,18 +169,18 @@ function addPhoto(albumName) {
     let promise = upload.promise();
 
     promise.then(
-        function() {
+        function () {
             alert("Successfully uploaded photo.");
             viewAlbum(albumName);
         },
-        function(err) {
+        function (err) {
             return alert("There was an error uploading your photo: " + err.message);
         }
     );
 }
 
 function deletePhoto(albumName, photoKey) {
-    s3.deleteObject({ Bucket: albumBucketName, Key: photoKey }, function(err) {
+    s3.deleteObject({Bucket: albumBucketName, Key: photoKey}, function (err) {
         if (err) {
             return alert("There was an error deleting your photo: " + err.message);
         }
@@ -186,18 +191,19 @@ function deletePhoto(albumName, photoKey) {
 
 function deleteAlbum(albumName) {
     let albumKey = encodeURIComponent(albumName) + "/";
-    s3.listObjects({ Bucket: albumBucketName, Prefix: albumKey }, function(err, data) {
+    s3.listObjects({Bucket: albumBucketName, Prefix: albumKey}, function (err, data) {
         if (err) {
             return alert("There was an error deleting your album: " + err.message);
         }
-        let objects = data.Contents.map(function(object) {
-            return { Key: object.Key };
+        let objects = data.Contents.map(function (object) {
+            return {Key: object.Key};
         });
         s3.deleteObjects(
-            { Bucket: albumBucketName,
-                Delete: { Objects: objects, Quiet: true }
+            {
+                Bucket: albumBucketName,
+                Delete: {Objects: objects, Quiet: true}
             },
-            function(err) {
+            function (err) {
                 if (err) {
                     return alert("There was an error deleting your album: " + err.message);
                 }
@@ -208,12 +214,23 @@ function deleteAlbum(albumName) {
     });
 }
 
-function downloadPhoto() {
-    // let href = this.request.httpRequest.endpoint.href;
-    // let bucketUrl = href + albumBucketName + "/";
-    // let photoUrl = bucketUrl + encodeURIComponent(photoKey);
-    let element = document.createElement("a");
-    element.click();
-
+function downloadPhoto(photoUrl, photoKey) {
+    let fileName = photoKey.substring(photoKey.lastIndexOf("/") + 1);
+    console.log(fileName);
+    const proxyurl = "https://cors-anywhere.herokuapp.com/";
+    fetch(proxyurl + photoUrl)
+        .then(resp => resp.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            // the filename you want
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            alert('your file has downloaded!'); // or you know, something with better UX...
+        })
+        .catch(() => alert('oh no!'));
 }
-
