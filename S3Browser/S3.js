@@ -63,7 +63,7 @@ function createAlbum(albumName) {
         return alert("Album names cannot contain spaces");
     }
     let albumKey = encodeURIComponent(albumName);
-    s3.headObject({ Bucket: albumBucketName, Key: albumKey }, function (err) {
+    s3.headObject({Bucket: albumBucketName, Key: albumKey}, function (err) {
         if (!err) {
             return alert("Album already exists.");
         }
@@ -72,12 +72,12 @@ function createAlbum(albumName) {
         }
         alert("Successfully created album.");
         viewAlbum(albumName);
-   });
+    });
 }
 
 function viewAlbum(albumName) {
     let albumPhotosKey = encodeURIComponent(albumName) + "/";
-    s3.listObjects({ Bucket: albumBucketName, Prefix: albumPhotosKey }, function (err, data) {
+    s3.listObjects({Bucket: albumBucketName, Prefix: albumPhotosKey}, function (err, data) {
         if (err) {
             return alert("There was an error viewing your album: " + err.message);
         }
@@ -88,14 +88,38 @@ function viewAlbum(albumName) {
         let photos = data.Contents.map(function (photo) {
             let photoKey = photo.Key;
             let photoUrl = bucketUrl + encodeURIComponent(photoKey);
-            console.log(photoKey);
+            let width = screen.width;
+            let size = 200;
+            let actualSize = size + 14;
+            let numPhotos = Math.floor(width / actualSize);
+            let emptySpace = width - numPhotos * actualSize;
+            let space = emptySpace / (numPhotos + 1);
 
             return getHtml([
                 "<span>",
-                "<div>",
-                '<img style="width:25%;height:25%;" src="' + photoUrl + '" alt=""/>',
-                "</div>",
-                "<div>",
+                "<div class =\"column\">",
+                "<style>",
+                ".thumbnail { " +
+                "width: 200px; " +
+                "height: 200px; " +
+                "overflow: hidden;" +
+                "} " +
+                "img { " +
+                "border: 2px solid #ddd; " +
+                "border-radius: 4px; " +
+                "padding: 5px;" +
+                "width: 100%; " +
+                "height: 100%; " +
+                "object-fit: cover; " +
+                "} " +
+                ".column { " +
+                "float: left; " +
+                "width: " + actualSize / width * 100 + "%; " +
+                "padding: " + space / 2 + "px; " +
+                "} ",
+                "</style>",
+                "<img style=width:" + size + "px;height:" + size + "px; src=\"" + photoUrl + "\" alt=\"\"/>",
+                "<br>",
                 "<span onclick=\"deletePhoto('" +
                 albumName +
                 "','" +
@@ -114,8 +138,7 @@ function viewAlbum(albumName) {
                 photoKey.replace(albumPhotosKey, ""),
                 "</span>",
                 "</div>",
-                "</span>",
-                "<br>"
+                "</span>"
             ]);
         });
         let message = photos.length
@@ -126,16 +149,27 @@ function viewAlbum(albumName) {
             "Album: " + albumName,
             "</h2>",
             message,
-            "<div>",
+            "<style>",
+            ".row::after { " +
+            "content: \"\"; " +
+            "clear: both; " +
+            "display: table; " +
+            "} ",
+            "</style>",
+            "<div class=\"row\">",
             getHtml(photos),
             "</div>",
+            "<br>",
+            "<div>",
             '<input id="photoupload" type="file" accept="image/*">',
             '<button id="addphoto" onclick="addPhoto(\'' + albumName + "')\">",
             "Add Photo",
             "</button>",
             '<button onclick="listAlbums()">',
             "Back To Albums",
-            "</button>"
+            "</button>",
+            "</div>",
+            "<br>"
         ];
         document.getElementById("app").innerHTML = getHtml(htmlTemplate);
     });
